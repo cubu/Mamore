@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.mahout.cf.taste.impl.model.mongodb;
+package com.paradigma.recommender.db;
 
 import java.text.DateFormat;
 import java.text.ParseException;

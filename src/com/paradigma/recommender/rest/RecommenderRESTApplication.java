@@ -8,7 +8,7 @@ import javax.ws.rs.core.Application;
 
 /**
  * 
- * @author Alvaro Martin Fraguas - Paradigma Tecnologico
+ * @author Alvaro Martin Fraguas - Fernando Tapia Rico
  *
  */
 public class RecommenderRESTApplication extends Application {
@@ -18,7 +18,6 @@ public class RecommenderRESTApplication extends Application {
     Set<Class<?>> classes = new HashSet<Class<?>>();
     classes.add(UserResource.class);
     classes.add(PreferenceResource.class);
-    classes.add(PreferenceCreationResource.class);
     return classes;
   }
   

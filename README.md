@@ -80,6 +80,11 @@ The Recommender itself and the Mahout data model for MongoDB have been developed
 
 The REST service wrapper has been developed by Álvaro Martín Fraguas ( <https://github.com/amartinfraguas> )
 
+Collaborators
+-------------
+
+Julio Manuel Gonzalez Rodriguez 
+
 Issues
 ------
 

@@ -13,7 +13,7 @@
 	<property file="build.properties" />
 
 	<property name="project.sourceDir" value="src"/>
-	<property name="project.resourceDir" value="resources"/>
+	<property name="project.propertiesDir" value="properties"/>
 	<property name="project.lib" value="lib"/>
 	<property name="project.conf" value="conf"/>
 	
@@ -120,7 +120,7 @@
 		</copy>
 		
 		<copy todir="${build.dir}/${build.finalName}/WEB-INF/conf">
-			<fileset dir="${project.resourceDir}"/>
+			<fileset dir="${project.propertiesDir}"/>
 		</copy>
 		
 		<mkdir dir="${logs.dir}"/>

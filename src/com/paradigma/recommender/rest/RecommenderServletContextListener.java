@@ -13,7 +13,7 @@ import org.apache.log4j.PropertyConfigurator;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
-import com.paradigma.recommender.db.MongoDataModel;
+import com.paradigma.recommender.db.MongoDBDataModel;
 import com.paradigma.recommender.GeneralRecommender;
 
 /**
@@ -35,7 +35,7 @@ public class RecommenderServletContextListener implements ServletContextListener
   private static final String LOG4J_PROPERTIES = "WEB-INF/conf/log4j.properties";
 
   // Logger
-  private static final Logger log = LoggerFactory.getLogger(MongoDataModel.class);
+  private static final Logger log = LoggerFactory.getLogger(MongoDBDataModel.class);
   
   /**
    * Default MongoDB host. Default: localhost
@@ -228,7 +228,7 @@ public class RecommenderServletContextListener implements ServletContextListener
     GeneralRecommender recommender = new GeneralRecommender();
     try {
       if (mongoAuth) {
-        recommender.start(new MongoDataModel(mongoHost,
+        recommender.start(new MongoDBDataModel(mongoHost,
                                              mongoPort,
                                              mongoDB,
                                              mongoCollection,
@@ -246,7 +246,7 @@ public class RecommenderServletContextListener implements ServletContextListener
                           similarityMeasure,
                           neighborhoodType);
       } else {
-        recommender.start(new MongoDataModel(mongoHost,
+        recommender.start(new MongoDBDataModel(mongoHost,
                                              mongoPort,
                                              mongoDB,
                                              mongoCollection,

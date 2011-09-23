@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
@@ -17,8 +18,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
-import com.paradigma.recommender.db.MongoDataModel;
 import com.paradigma.recommender.GeneralRecommender;
+import com.paradigma.recommender.db.MongoDBDataModel;
 
 
 /** 
@@ -30,12 +31,12 @@ public class TestStarter {
   /**
    * Configuration file
    */
-  private static final String RECOMMENDER_PROPERTIES = "./resources/recommender.properties";
+  private static final String RECOMMENDER_PROPERTIES = "./properties/recommender.properties";
   
   /**
    * Configuration file
    */
-  private static final String LOG4J_PROPERTIES = "./resources/log4j.properties";
+  private static final String LOG4J_PROPERTIES = "./properties/log4j.properties";
 
   // Logger
   private static final Logger log = LoggerFactory.getLogger(TestStarter.class);
@@ -233,7 +234,7 @@ public class TestStarter {
       getParameters();
       recommender = new GeneralRecommender();
       if (mongoAuth) {
-        recommender.start(new MongoDataModel(mongoHost,
+        recommender.start(new MongoDBDataModel(mongoHost,
                                              mongoPort,
                                              mongoDB,
                                              mongoCollection,
@@ -251,7 +252,7 @@ public class TestStarter {
                           similarityMeasure,
                           neighborhoodType);
       } else {
-        recommender.start(new MongoDataModel(mongoHost,
+        recommender.start(new MongoDBDataModel(mongoHost,
                                              mongoPort,
                                              mongoDB,
                                              mongoCollection,
@@ -311,25 +312,30 @@ public class TestStarter {
         case 1:
         case 2:
           wantsItems = askForWantsItems(console);
-          if (wantsItems) {
-          
-          } else {
-            ArrayList<String> recommendation = null;
+          if (!wantsItems) {
             if (method == 1) {
               System.out.println("Recommending users...");
-              recommendation = recommender.recommend(userID, null, true);
+              System.out.println(recommender.recommend(userID, null, true));
             } else {
               System.out.println("Recommending items...");
-              recommendation = recommender.recommend(userID, null, false);
+              System.out.println(recommender.recommend(userID, null, false));
             }
-            System.out.println(recommendation);
+            break;
           }
-          break;
         case 3:
         case 4:
-          ArrayList<ArrayList<String>> items = askForItems(console);
+          List<List<String>> items = askForItems(console);
           System.out.println((method == 3 ? "Adding " : "Removing ") + " user: " + userID + "   Items: " + items);
           recommender.refreshData(userID, items, (method == 3 ? true : false));
+          if (method == 1 || method == 2) {
+            if (method == 1) {
+              System.out.println("Recommending users...");
+              System.out.println(recommender.recommend(userID, null, true));
+            } else {
+              System.out.println("Recommending items...");
+              System.out.println(recommender.recommend(userID, null, false));
+            }
+          }
           break;
         case 5:
           recommender.refresh(null);
@@ -342,29 +348,29 @@ public class TestStarter {
           main(null);
           break;
         case 7:
-          LongPrimitiveIterator userIDs = ((MongoDataModel) recommender.getDataModel()).getUserIDs();
+          LongPrimitiveIterator userIDs = ((MongoDBDataModel) recommender.getDataModel()).getUserIDs();
           while(userIDs.hasNext()) {
             System.out.println("User ID: " + 
-            ((MongoDataModel) recommender.getDataModel()).fromLongToId(userIDs.nextLong()));
+            ((MongoDBDataModel) recommender.getDataModel()).fromLongToId(userIDs.nextLong()));
           }
           break;
         case 8:
-            LongPrimitiveIterator itemIDs = ((MongoDataModel) recommender.getDataModel()).getItemIDs();
+            LongPrimitiveIterator itemIDs = ((MongoDBDataModel) recommender.getDataModel()).getItemIDs();
             while(itemIDs.hasNext()) {
               System.out.println("Item ID: " + 
-              ((MongoDataModel) recommender.getDataModel()).fromLongToId(itemIDs.nextLong()));
+              ((MongoDBDataModel) recommender.getDataModel()).fromLongToId(itemIDs.nextLong()));
             }
             break;
         case 9:
-            long userIDid = Long.parseLong(((MongoDataModel) recommender.getDataModel()).fromIdToLong(userID, true));
-            LongPrimitiveIterator itemsByUserIDs = ((MongoDataModel) recommender.getDataModel()).getItemIDsFromUser(userIDid).iterator();
+            long userIDid = Long.parseLong(((MongoDBDataModel) recommender.getDataModel()).fromIdToLong(userID, true));
+            LongPrimitiveIterator itemsByUserIDs = ((MongoDBDataModel) recommender.getDataModel()).getItemIDsFromUser(userIDid).iterator();
             while(itemsByUserIDs.hasNext()) {
               System.out.println("Item by user:" + userID +" ID: " + 
-              ((MongoDataModel) recommender.getDataModel()).fromLongToId(itemsByUserIDs.nextLong()));
+              ((MongoDBDataModel) recommender.getDataModel()).fromLongToId(itemsByUserIDs.nextLong()));
             }
             break;
         case 10:
-          System.out.println(((MongoDataModel) recommender.getDataModel()).mongoUpdateDate());
+          System.out.println(((MongoDBDataModel) recommender.getDataModel()).mongoUpdateDate());
           break;
       }
     }
@@ -386,9 +392,9 @@ public class TestStarter {
     return wantsItems;
   }
   
-  private static ArrayList<ArrayList<String>> askForItems(BufferedReader console) throws Exception{
+  private static ArrayList<List<String>> askForItems(BufferedReader console) throws Exception{
     boolean everythingOK = false;
-    ArrayList<ArrayList<String>> itemsOut = new ArrayList<ArrayList<String>>();
+    ArrayList<List<String>> itemsOut = new ArrayList<List<String>>();
     while(!everythingOK) {
         System.out.println("Introduce items (itemID,preference;itemID,preference;itemID,preference):");
         String itemsString = console.readLine();

@@ -26,14 +26,14 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
-import com.paradigma.recommender.db.MongoDataModel;
+import com.paradigma.recommender.db.MongoDBDataModel;
 
 /** 
 * @author Fernando Tapia Rico
 */
 public class GeneralRecommender implements Recommender {
   // Class logger
-  private static final Logger log = LoggerFactory.getLogger(MongoDataModel.class);
+  private static final Logger log = LoggerFactory.getLogger(MongoDBDataModel.class);
 
   /**
    * Default user threshold
@@ -90,16 +90,16 @@ public class GeneralRecommender implements Recommender {
   /**
    * Recommender variables
    */
-  protected MongoDataModel dataModel;
+  protected MongoDBDataModel dataModel;
   protected static UserSimilarity similarity;
   protected static UserNeighborhood neighborhood;
   protected static GenericUserBasedRecommender recommender;
 
-  public void start(MongoDataModel dataModel) {
+  public void start(MongoDBDataModel dataModel) {
     build(dataModel);
   }
   
-  public void start(MongoDataModel dataModel, 
+  public void start(MongoDBDataModel dataModel, 
                     double userThreshold,
                     int neighborsNumber,
                     int maxRecommendations,
@@ -113,7 +113,7 @@ public class GeneralRecommender implements Recommender {
     build(dataModel);
   }
   
-  public void build(MongoDataModel dataModel) {
+  public void build(MongoDBDataModel dataModel) {
     try {
       this.dataModel = dataModel;
       if (similarityMeasure.equals("log")) {
@@ -141,13 +141,13 @@ public class GeneralRecommender implements Recommender {
   /**
    * Returns a list of recommended users IDs for the given user ID
    */
-  public ArrayList<String> recommend(String id, ArrayList<ArrayList<String>> items, boolean recommendUsers)
+  public ArrayList<ArrayList<String>> recommend(String id, Iterable<List<String>> items, boolean recommendUsers)
                            throws NullPointerException, NoSuchUserException, NoSuchItemException, IllegalArgumentException {
     long userID = Long.parseLong(dataModel.fromIdToLong(id, true));
     try {
       FastIDSet userItems = dataModel.getItemIDsFromUser(userID);
       if (items != null) {
-        for (ArrayList<String> item : items) {
+        for (List<String> item : items) {
           long itemID = Long.parseLong(dataModel.fromIdToLong((String) item.get(0), false));
             if (userItems.contains(itemID)) {
               dataModel.refreshData(id, items, true);
@@ -171,13 +171,15 @@ public class GeneralRecommender implements Recommender {
   /**
    * Returns a list of recommended users IDs for the given user ID
    */
-  public ArrayList<String> recommendUsers(long id) {
-    ArrayList<String> result = null;
+  public ArrayList<ArrayList<String>> recommendUsers(long id) {
+    ArrayList<ArrayList<String>> result = null;
     try {
       long[] recomendations = recommender.mostSimilarUserIDs(id, maxRecommendations);
-      result = new ArrayList<String>();
+      result = new ArrayList<ArrayList<String>>();
       for (long r : recomendations) {
-        result.add(dataModel.fromLongToId(r));
+    	ArrayList<String> user = new ArrayList<String>();
+        user.add(dataModel.fromLongToId(r));
+        result.add(user);
       }
     } catch (TasteException e) {
       log.error("Error while processing user recommendations for user " + id, e);
@@ -188,13 +190,16 @@ public class GeneralRecommender implements Recommender {
   /**
    * Returns a list of recommended item IDs for the given user ID
    */
-  public ArrayList<String> recommendItems(long id) {
-    ArrayList<String> result = null;
+  public ArrayList<ArrayList<String>> recommendItems(long id) {
+    ArrayList<ArrayList<String>> result = null;
     try {
       List<RecommendedItem> recomendations = recommender.recommend(id, maxRecommendations);
-      result = new ArrayList<String>();
+      result = new ArrayList<ArrayList<String>>();
       for (RecommendedItem r : recomendations) {
-        result.add(dataModel.fromLongToId(r.getItemID()));
+    	ArrayList<String> item = new ArrayList<String>();
+        item.add(dataModel.fromLongToId(r.getItemID()));
+        item.add(Float.toString(r.getValue()));
+        result.add(item);
       }
     } catch (TasteException e) {
       log.error("Error while processing item recommendations for user " + id, e);
@@ -202,7 +207,7 @@ public class GeneralRecommender implements Recommender {
     return result;
   }
   
-  public void refreshData(String userID, ArrayList<ArrayList<String>> items, boolean add)
+  public void refreshData(String userID, Iterable<List<String>> items, boolean add)
               throws NullPointerException, NoSuchUserException, NoSuchItemException, IllegalArgumentException {
     dataModel.refreshData(userID, items, add);
   }

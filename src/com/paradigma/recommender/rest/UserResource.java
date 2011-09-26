@@ -25,109 +25,72 @@ import com.paradigma.recommender.db.MongoDBDataModel;
  */
 @Path(value="/users")
 public class UserResource {
-	
+
+  private static final Logger log = LoggerFactory.getLogger(MongoDBDataModel.class);
+
   static @Context ServletContext servletContext;
   static String XMLDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-  
-  
+
   // Get the recommended users of a user
   @GET
   @Path(value="/{userID}/users.xml")
   @Produces(value="application/xml")
   public String getRecommendedUsersXML(@PathParam(value="userID") String userID) {
-    GeneralRecommender recommender = (GeneralRecommender) servletContext.getAttribute("recommender");
-    String response = XMLDeclaration + "<response></response><status>false</status>";
-    try {
-      response = buildRecommendedResourceResponseXML("user", recommender.recommend(userID, null, true));
-    } catch (Exception e) {}
-    return response;
+    return buildRecommendedResourceResponse(userID, true, true, servletContext);
   }
   
   @GET
   @Path(value="/{userID}/users.json")
   @Produces(value="application/json")
   public String getRecommendedUsersJSON(@PathParam(value="userID") String userID) {
-    GeneralRecommender recommender = (GeneralRecommender) servletContext.getAttribute("recommender");
-    String response = "{\"response\" : [], \"status\": false}";
-    try {
-      response = buildRecommendedResourceResponseJSON("user", recommender.recommend(userID, null, true));
-    } catch (Exception e) {}
- 
-    return response;
+    return buildRecommendedResourceResponse(userID, false, true, servletContext);
   }
-
   
   // Get the recommended items of a user
   @GET
   @Path(value="/{userID}/items.xml")
   @Produces(value="application/xml")
   public String getRecommendedItemsXML(@PathParam(value="userID") String userID) {
-    GeneralRecommender recommender = (GeneralRecommender) servletContext.getAttribute("recommender");
-    String response = XMLDeclaration + "<response></response><status>false</status>";
-    try {
-      response = buildRecommendedResourceResponseXML("item", recommender.recommend(userID, null, false));
-    } catch (Exception e) {}
-    return response;
+    return buildRecommendedResourceResponse(userID, true, false, servletContext);
   }
   
   @GET
   @Path(value="/{userID}/items.json")
   @Produces(value="application/json")
   public String getRecommendedItemsJSON(@PathParam(value="userID") String userID) {
+    return buildRecommendedResourceResponse(userID, false, false, servletContext);
+  }
+  
+  private static String buildRecommendedResourceResponse (String userID, boolean isXML, boolean isUsers, ServletContext servletContext) {
     GeneralRecommender recommender = (GeneralRecommender) servletContext.getAttribute("recommender");
-    String response = "{\"response\" : [], \"status\": false}";
+    boolean error = false;
+    String result = "";
     try {
-      response = buildRecommendedResourceResponseJSON("item", recommender.recommend(userID, null, false));
-    } catch (Exception e) {}
-    return response;
-  }
-
-
-  
-  /*
-   * ====================================================================================
-   *
-   *
-   *                               PRIVATE METHODS
-   *
-   *
-   * ====================================================================================
-   */
-  
-  
-  private static String buildRecommendedResourceResponseXML (String resourceName, ArrayList<ArrayList<String>> recommendations) {
-    Iterator<ArrayList<String>> it = recommendations.iterator();
-    String result = "";
-    
-    while (it.hasNext()) {
-      ArrayList<String> recommendation = ((ArrayList<String>) (it.next()));
-      result += "<" + resourceName + "><id>"+ recommendation.get(0) + "</id>";
-      if (recommendation.size() > 1) {
-    	  result += "<weight>"+ recommendation.get(1) + "</weight>";
+      Iterator<ArrayList<String>> it = recommender.recommend(userID, null, isUsers).iterator();
+      boolean first = true;
+      while (it.hasNext()) {
+        if (first) first = false;
+        else if (!isXML) result += ",";
+        ArrayList<String> recommendation = ((ArrayList<String>) (it.next()));
+        if (isXML) result += "<" + (isUsers ? "user" : "item") + "><id>" + recommendation.get(0) + "</id>";
+        else result += "{\"id\":\"" + recommendation.get(0) + "\"";
+        if (recommendation.size() > 1) {
+          if (isXML) result += "<weight>"+ recommendation.get(1) + "</weight>";
+          else result += ",\"weight\":\""+ recommendation.get(1) + "\"";
+        }
+        if (isXML) result += "</" + (isUsers ? "user" : "item") + ">";
+        else result += "}";
       }
-      result += "</" + resourceName + ">";
+      if (isXML) result = "<user_id>" + userID + "</user_id><" + (isUsers ? "users" : "items") + " type=\"array\">" + result + "</" + (isUsers ? "users" : "items") + ">";
+      else result = "\"user_id\":\"" + userID +"\",\"" + (isUsers ? "users" : "items") + "\": [" + result + "]";
+    } catch (Exception e) {
+      log.info(e.getMessage());
     }
-    result = "<" + resourceName + "s type=\"array\">" + result + "</" + resourceName + "s>";
-    return XMLDeclaration + "<root><response>" + result + "</response><status>true</status></root>";
-  }
-  
-  private static String buildRecommendedResourceResponseJSON (String resourceName, ArrayList<ArrayList<String>> recommendations) {
-    Iterator<ArrayList<String>> it = recommendations.iterator();
-    String result = "";
-    boolean first = true;
-
-    while (it.hasNext()) {
-      ArrayList<String> recommendation = ((ArrayList<String>) (it.next()));
-      if (first) first = false;
-      else result += ", ";
-      result += "{\"id\" : \"" + recommendation.get(0) + "\"";
-      if (recommendation.size() > 1) {
-    	  result += ", \"weight\" : \""+ recommendation.get(1) + "\"";
-      }
-      result += '}';
+    if (isXML) {
+      return XMLDeclaration + "<root><response>" + result + "</response><status>" + (error ? "false" : "true") + "</status></root>";
+    } else {
+      return "{\"response\" : {" + result + "}, \"status\":" + (error ? "false" : "true")  + "}";
     }
-    return "{\"response\":{ \"" + resourceName + "s\": [" + result + "]}, \"status\" : true}";
-  
   }
 
 }

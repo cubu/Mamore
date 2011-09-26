@@ -177,7 +177,7 @@ public class GeneralRecommender implements Recommender {
       long[] recomendations = recommender.mostSimilarUserIDs(id, maxRecommendations);
       result = new ArrayList<ArrayList<String>>();
       for (long r : recomendations) {
-    	ArrayList<String> user = new ArrayList<String>();
+        ArrayList<String> user = new ArrayList<String>();
         user.add(dataModel.fromLongToId(r));
         result.add(user);
       }
@@ -196,7 +196,7 @@ public class GeneralRecommender implements Recommender {
       List<RecommendedItem> recomendations = recommender.recommend(id, maxRecommendations);
       result = new ArrayList<ArrayList<String>>();
       for (RecommendedItem r : recomendations) {
-    	ArrayList<String> item = new ArrayList<String>();
+        ArrayList<String> item = new ArrayList<String>();
         item.add(dataModel.fromLongToId(r.getItemID()));
         item.add(Float.toString(r.getValue()));
         result.add(item);

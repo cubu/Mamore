@@ -44,9 +44,9 @@ import com.paradigma.recommender.rest.Preference;
 @Path(value="/preferences")
 public class PreferenceResource {
 
-	// Logger
-	  private static final Logger log = LoggerFactory.getLogger(MongoDBDataModel.class);
-	
+  // Logger
+  private static final Logger log = LoggerFactory.getLogger(MongoDBDataModel.class);
+
   static @Context ServletContext servletContext;
   static String XMLDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
@@ -56,26 +56,26 @@ public class PreferenceResource {
   @Path(value="/{userID}/{itemID}/{weight}.xml")
   @Produces(value="application/xml")
   public String createPreferenceXML(@PathParam(value="userID") String userID, @PathParam(value="itemID") String itemID, @PathParam(value="weight") String weight) {
-	  return refreshPreference(userID, itemID, weight, true, true, servletContext);
+    return refreshPreference(userID, itemID, weight, true, true, servletContext);
   }
   
   @POST
   @Path(value="/{userID}/{itemID}/{weight}.json")
   @Produces(value="application/json")
   public String createPreferenceJSON(@PathParam(value="userID") String userID, @PathParam(value="itemID") String itemID, @PathParam(value="weight") String weight) {
-	  return refreshPreference(userID, itemID, weight, false, true, servletContext);
+    return refreshPreference(userID, itemID, weight, false, true, servletContext);
   }
   
   // Refresh preferences
   @PUT
   public void refreshPreferences() {
-	log.info("Refresh REST");
-	GeneralRecommender recommender = (GeneralRecommender) servletContext.getAttribute("recommender");
-	try {
-	  recommender.refresh(null);
-	} catch (Exception e) {
-	  log.info("Bad refresh");
-	}
+    log.info("Refresh REST");
+    GeneralRecommender recommender = (GeneralRecommender) servletContext.getAttribute("recommender");
+    try {
+      recommender.refresh(null);
+    } catch (Exception e) {
+      log.info("Bad refresh");
+    }
   }
   
   // Delete a preference of a user
@@ -83,17 +83,16 @@ public class PreferenceResource {
   @Path(value="/{userID}/{itemID}.xml")
   @Produces(value="application/xml")
   public String deletePreferenceXML(@PathParam(value="userID") String userID, @PathParam(value="itemID") String itemID) {
-	  return refreshPreference(userID, itemID, "", true, false, servletContext);
+    return refreshPreference(userID, itemID, "", true, false, servletContext);
   }
   
-//Delete a preference of a user
+  //Delete a preference of a user
   @DELETE
   @Path(value="/{userID}/{itemID}.json")
   @Produces(value="application/json")
   public String deletePreference(@PathParam(value="userID") String userID, @PathParam(value="itemID") String itemID) {
-		return refreshPreference(userID, itemID, "", false, false, servletContext);
+    return refreshPreference(userID, itemID, "", false, false, servletContext);
   }
-
 
   // Need to pass the servletContext as an argument to be able to call this method from other resource classes
   private static String refreshPreference (String userID, String itemID, String weight, boolean isXML, boolean add, ServletContext servletContext) {
@@ -108,11 +107,11 @@ public class PreferenceResource {
     try {
       recommender.refreshData(userID, items, add);
     } catch (Exception e) {
-    	log.info(e.getMessage());
-    	error = true;
+      log.info(e.getMessage());
+      error = true;
     }
     if (isXML) {
-    	return XMLDeclaration + "<root><response>" + (error ? "" : userPref.toString(true)) + "</response><status>" + (error ? "false" : "true") + "</status></root>";
+      return XMLDeclaration + "<root><response>" + (error ? "" : userPref.toString(true)) + "</response><status>" + (error ? "false" : "true") + "</status></root>";
     } else {
       return "{\"response\" : {" + (error ? "" : userPref.toString(false)) + "}, \"status\":" + (error ? "false" : "true")  + "}";
     }

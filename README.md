@@ -8,7 +8,7 @@ Contributing
 
 If you make improvements to this application, please share with others.
 
-Send the author a message, create an [issue]( https://github.com/fertapric/Mahout-MongoDB-Recommender/issues ), or fork the project and submit a pull request.
+Send the author a message, create an [issue]( https://github.com/fertapric/Mamore/issues ), or fork the project and submit a pull request.
 
 If you add functionality to this application, create an alternative implementation, or build an application that is similar, please contact me and I'll add a note to the README so that others can find your work.
 
@@ -88,7 +88,7 @@ Julio Manuel Gonzalez Rodriguez
 Issues
 ------
 
-Any issues? Please create an [Issue]( https://github.com/fertapric/Mahout-MongoDB-Recommender/issues ) on GitHub.
+Any issues? Please create an [Issue]( https://github.com/fertapric/Mamore/issues ) on GitHub.
 
 License
 -------
